@@ -1,4 +1,5 @@
-# Test, then publish the static site to GitHub Pages.
+# Test, then publish a redirect page to GitHub Pages: the site now lives at
+# https://graveyard-factory.runoverlabs.dev (repo: runoverlabs/graveyard-factory).
 # Enable it once in the repo: Settings -> Pages -> Source: GitHub Actions.
 name: Pages
 
@@ -27,19 +28,15 @@ jobs:
       - run: npm test
       # Type-check the JSDoc types (TypeScript is fetched here only; the app has no dependencies).
       - run: npm run typecheck
-      # Only what the page needs: no tests, art masters or local tooling.
-      - name: Stage the site
+      # Only the redirect page (index.html, plus 404.html for old deep links) is published.
+      - name: Stage the redirect
         run: |
           mkdir _site
-          cp -r index.html styles.css src assets llms.txt sitemap.xml .nojekyll _site/
-          find _site -type f | sed 's|^_site/||' | sort > /tmp/files.txt
-          echo "$(wc -l < /tmp/files.txt) files, $(du -sb _site | cut -f1) bytes"
+          cp .github/pages-redirect/*.html _site/
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
-          # v4+ skips dotfiles by default; keep .nojekyll.
-          include-hidden-files: true
 
   deploy:
     needs: build
